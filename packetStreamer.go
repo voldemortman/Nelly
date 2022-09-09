@@ -2,13 +2,21 @@ package nelly
 
 import (
 	"github.com/google/gopacket"
+	"go.uber.org/zap"
 )
+
+var sugar *zap.SugaredLogger
+
+func initializeLogger() {
+	logger, _ := zap.NewProduction()
+	sugar = logger.Sugar()
+}
 
 type PacketProcessor func(*gopacket.Packet)
 
 type PacketStreamer struct {
 	processor PacketProcessor
-	Source    chan *gopacket.Packet
+	source    chan *gopacket.Packet
 }
 
 func (stream *PacketStreamer) AddProcessor(processorFunc PacketProcessor) *PacketStreamer {
@@ -21,4 +29,32 @@ func (stream *PacketStreamer) AddProcessor(processorFunc PacketProcessor) *Packe
 		}
 	}
 	return stream
+}
+
+func (stream *PacketStreamer) Start(quit chan bool) chan *gopacket.Packet {
+	output := make(chan *gopacket.Packet)
+	go func() {
+		hasQuitBeenCalled := false
+		for !hasQuitBeenCalled {
+			select {
+			case packet := <-stream.source:
+				if stream.processor != nil {
+					stream.processor(packet)
+				}
+				output <- packet
+			case <-quit:
+				hasQuitBeenCalled = true
+				sugar.Debug("Quit has been called")
+			}
+		}
+	}()
+	return output
+}
+
+func InitializePacketStreamer(source chan *gopacket.Packet) *PacketStreamer {
+	initializeLogger()
+	return &PacketStreamer{
+		source:    source,
+		processor: nil,
+	}
 }
