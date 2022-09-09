@@ -1,6 +1,8 @@
 package nelly
 
 import (
+	"errors"
+
 	"github.com/google/gopacket"
 	"go.uber.org/zap"
 )
@@ -12,6 +14,13 @@ type PacketProcessor func(*gopacket.Packet)
 type PacketStreamer struct {
 	processor PacketProcessor
 	source    chan *gopacket.Packet
+}
+
+func (stream *PacketStreamer) AddSource(source chan *gopacket.Packet) error {
+	if stream.source == nil {
+		return errors.New("Packet streamer already has a source")
+	}
+	stream.source = source
 }
 
 func (stream *PacketStreamer) AddProcessor(processorFunc PacketProcessor) *PacketStreamer {
