@@ -7,11 +7,6 @@ import (
 
 var sugar *zap.SugaredLogger
 
-func initializeLogger() {
-	logger, _ := zap.NewProduction()
-	sugar = logger.Sugar()
-}
-
 type PacketProcessor func(*gopacket.Packet)
 
 type PacketStreamer struct {
@@ -52,7 +47,7 @@ func (stream *PacketStreamer) Start(quit chan bool) chan *gopacket.Packet {
 }
 
 func InitializePacketStreamer(source chan *gopacket.Packet) *PacketStreamer {
-	initializeLogger()
+	sugar = InitializeLogger()
 	return &PacketStreamer{
 		source:    source,
 		processor: nil,
