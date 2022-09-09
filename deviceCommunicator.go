@@ -45,11 +45,16 @@ func buildDeviceWriterFilter (handle *pcap.Handle, errorProcessor PacketProcesso
 		rawBytes, err := serializePacket(packet)
 		if err != nil {
 			sugar.Warn("Failed to serialize packet")
-			errorProcessor(packet)
+			if errorProcessor != nil {
+				errorProcessor(packet)
+			}
 		}
 		err = handle.WritePacketData(rawBytes)
 		if err != nil {
 			sugar.Warn("Failed to send packet to device")
+			if errorProcessor != nil {
+				errorProcessor(packet)
+			}
 		}
 	}
 }
