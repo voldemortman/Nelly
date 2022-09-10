@@ -2,7 +2,7 @@ package nelly
 
 type Bridge struct {
 	deviceToDeviceCommunicatorMap map[string]*DeviceCommunicator
-	deviceDestrucotr              DeviceDestructor
+	deviceDestructor              DeviceDestructor
 	isStarted                     bool
 }
 
@@ -21,11 +21,23 @@ func (bridge *Bridge) AddDevice(deviceName string) error {
 
 func (bridge *Bridge) RemoveDevice(deviceName string) error {
 	delete(bridge.deviceToDeviceCommunicatorMap, deviceName)
-	return bridge.deviceDestrucotr.DestructDevice(deviceName)
+	return bridge.deviceDestructor.DestructDevice(deviceName)
+}
+
+func (bridge *Bridge) startDevice(deviceName string) {
+	communicator := bridge.deviceToDeviceCommunicatorMap[deviceName]
+	writerQuit := make(chan bool)
+	sourceQuit := make(chan bool)
+
+	bridge.startWritingOnDevice(deviceName, writerQuit)
+	sourceListenerQuit := bridge.startListeningOnDevice(deviceName, sourceQuit)
+	bridge.deviceDestructor.DeviceToQuitChannelMap[deviceName] = []chan bool{sourceQuit, sourceListenerQuit, writerQuit}
+	bridge.deviceDestructor.DeviceToHandleMap[deviceName] = communicator.Handle
 }
 
 func (bridge *Bridge) startWritingOnDevice(deviceName string, writerQuit chan bool) {
 	communicator := bridge.deviceToDeviceCommunicatorMap[deviceName]
+	// TODO: code smell, this returns a channel that we don't use
 	communicator.PacketWriter.Start(writerQuit)
 }
 
