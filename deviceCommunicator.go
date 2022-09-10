@@ -3,7 +3,6 @@ package nelly
 import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
-	"go.uber.org/zap"
 )
 
 type DeviceCommunicator struct {
@@ -16,7 +15,6 @@ type DeviceCommunicator struct {
 // The same default as tcpdump.
 const defaultSnapLen = 262144
 
-
 // TODO: split creation of packet reader and writer to different files
 func BuildDeviceCommunicator(device string, writeErrorHandler PacketProcessor) (*DeviceCommunicator, error) {
 	handle, err := pcap.OpenLive(device, defaultSnapLen, true, -1)
@@ -24,13 +22,13 @@ func BuildDeviceCommunicator(device string, writeErrorHandler PacketProcessor) (
 		return nil, err
 	}
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
-	sniffer := PacketStreamer {
+	sniffer := PacketStreamer{
 		nil,
-		ConvertChanToPointerChan[gopacket.Packet](make(chan gopacket.Packet)),
+		ConvertChanToPointerChan[gopacket.Packet](packetSource.Packets()),
 	}
 	writer := PacketStreamer{
 		buildDeviceWriterFilter(handle, writeErrorHandler),
-		nil
+		nil,
 	}
 	devCommunicator := DeviceCommunicator{
 		handle,
@@ -40,7 +38,7 @@ func BuildDeviceCommunicator(device string, writeErrorHandler PacketProcessor) (
 	return &devCommunicator, nil
 }
 
-func buildDeviceWriterFilter (handle *pcap.Handle, errorProcessor PacketProcessor) func(packet *gopacket.Packet) {
+func buildDeviceWriterFilter(handle *pcap.Handle, errorProcessor PacketProcessor) func(packet *gopacket.Packet) {
 	return func(packet *gopacket.Packet) {
 		rawBytes, err := serializePacket(packet)
 		if err != nil {

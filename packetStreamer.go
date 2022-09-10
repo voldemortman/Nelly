@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// TODO: move this to someplace normal
 var sugar *zap.SugaredLogger
 
 type PacketProcessor func(*gopacket.Packet)
