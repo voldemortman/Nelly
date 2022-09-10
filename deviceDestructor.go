@@ -7,6 +7,7 @@ import (
 	"github.com/google/gopacket/pcap"
 )
 
+// TODO: Think of way to make this composite design pattern, or maybe other patterns
 type DeviceDestructor struct {
 	DeviceToQuitChannelMap map[string][]chan bool
 	DeviceToHandleMap      map[string]*pcap.Handle
