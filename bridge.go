@@ -6,6 +6,23 @@ type Bridge struct {
 	isStarted                     bool
 }
 
+func (bridge *Bridge) StartBridge() {
+	for device := range bridge.deviceToDeviceCommunicatorMap {
+		bridge.startDevice(device)
+	}
+	bridge.isStarted = true
+}
+
+func (bridge *Bridge) StopBridge() error {
+	for device := range bridge.deviceToDeviceCommunicatorMap {
+		if err := bridge.RemoveDevice(device); err != nil {
+			sugar.Errorf("failed to stop device %s", device)
+			return err
+		}
+	}
+	return nil
+}
+
 func (bridge *Bridge) AddDevice(deviceName string) error {
 	communicator, err := BuildDeviceCommunicator(deviceName, nil)
 	if err != nil {
@@ -31,6 +48,7 @@ func (bridge *Bridge) startDevice(deviceName string) {
 
 	bridge.startWritingOnDevice(deviceName, writerQuit)
 	sourceListenerQuit := bridge.startListeningOnDevice(deviceName, sourceQuit)
+
 	bridge.deviceDestructor.DeviceToQuitChannelMap[deviceName] = []chan bool{sourceQuit, sourceListenerQuit, writerQuit}
 	bridge.deviceDestructor.DeviceToHandleMap[deviceName] = communicator.Handle
 }
