@@ -14,7 +14,7 @@ func (bridge *Bridge) AddDevice(deviceName string) error {
 	}
 	bridge.deviceToDeviceCommunicatorMap[deviceName] = communicator
 	if bridge.isStarted {
-		// TODO
+		bridge.startDevice(deviceName)
 	}
 	return nil
 }
