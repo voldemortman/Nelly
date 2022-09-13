@@ -12,7 +12,10 @@ func ConvertChanToPointerChan[T any](regularChan chan T) chan *T {
 	return output
 }
 
-func InitializeLogger() *zap.SugaredLogger {
+// TODO: move this to someplace normal
+var sugar *zap.SugaredLogger
+
+func InitializeLogger() {
 	logger, _ := zap.NewProduction()
-	return logger.Sugar()
+	sugar = logger.Sugar()
 }
