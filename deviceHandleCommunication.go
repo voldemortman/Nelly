@@ -18,11 +18,9 @@ func BuildDeviceHandleCommunication(device string, writeErrorHandler PacketFilte
 	sniffer := PacketStreamer{
 		nil,
 		ConvertChanToPointerChan[gopacket.Packet](packetSource.Packets()),
-		nil,
 	}
 	writer := PacketStreamer{
 		buildDeviceWriterFilter(handle, writeErrorHandler),
-		nil,
 		nil,
 	}
 	devCommunicator := DeviceCommunicator{

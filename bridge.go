@@ -24,7 +24,7 @@ func (bridge *Bridge) StopBridge() error {
 }
 
 func (bridge *Bridge) AddDevice(deviceName string) error {
-	communicator, err := BuildDeviceCommunicator(deviceName, nil)
+	communicator, err := BuildDeviceHandleCommunication(deviceName, nil)
 	if err != nil {
 		sugar.Errorf("failed to build device communicator on device %s", deviceName)
 		return err
