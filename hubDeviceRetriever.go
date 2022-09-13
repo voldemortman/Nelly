@@ -9,8 +9,7 @@ type HubDeviceRetriever struct {
 }
 
 func (hub *HubDeviceRetriever) AddDevice(device string) {
-	// TODO: find out how to get index of array
-	if hub.devices.indexOf(device) != -1 {
+	if hub.getDeviceIndex(device) == -1 {
 		hub.devices = append(hub.devices, device)
 	} else {
 		sugar.Warnf("Tried to add device that already exists to hub. Device %s", device)
@@ -18,10 +17,10 @@ func (hub *HubDeviceRetriever) AddDevice(device string) {
 }
 
 func (hub *HubDeviceRetriever) RemoveDevice(device string) {
-	// TODO: find out how to get index of array
-	if hub.devices.indexOf(device) != -1 {
-		// TODO: find out how to remove value from array
-		hub.devices.remove(device)
+	if deviceIndex := hub.getDeviceIndex(device); deviceIndex != -1 {
+		hub.devices[deviceIndex] = hub.devices[len(hub.devices)-1]
+		hub.devices[len(hub.devices)-1] = ""
+		hub.devices = hub.devices[:len(hub.devices)-1]
 	} else {
 		sugar.Warnf("Tried to remove device that doesn't exits on hub. Device %s", device)
 	}
@@ -29,4 +28,13 @@ func (hub *HubDeviceRetriever) RemoveDevice(device string) {
 
 func (hub *HubDeviceRetriever) GetAppropriateDevices(packet *gopacket.Packet) []string {
 	return hub.devices
+}
+
+func (hub *HubDeviceRetriever) getDeviceIndex(deviceToCheck string) int {
+	for i, device := range hub.devices {
+		if deviceToCheck == device {
+			return i
+		}
+	}
+	return -1
 }
