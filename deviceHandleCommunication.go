@@ -9,16 +9,17 @@ import (
 // The same default as tcpdump.
 const defaultSnapLen = 262144
 
-func BuildDeviceHandleCommunication(device string, writeErrorHandler PacketFilter) (*DeviceCommunicator, error) {
+func BuildDeviceHandleCommunication(device string, writeErrorHandler PacketFilter, macAddressTable AddressExpiration) (*DeviceCommunicator, error) {
 	handle, err := pcap.OpenLive(device, defaultSnapLen, true, -1)
 	if err != nil {
 		return nil, err
 	}
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 	sniffer := PacketStreamer{
-		nil,
+		buildMacLearnerFilter(nil),
 		ConvertChanToPointerChan[gopacket.Packet](packetSource.Packets()),
 	}
+	// TODO: should writer actually be a streamer? Maybe it needs to be a seperate struct that instead of using chan it writes one packet at a time?
 	writer := PacketStreamer{
 		buildDeviceWriterFilter(handle, writeErrorHandler),
 		nil,
@@ -50,6 +51,19 @@ func buildDeviceWriterFilter(handle *pcap.Handle, errorProcessor PacketFilter) *
 		}
 	}
 	return &writerFilter
+}
+
+func buildMacLearnerFilter(macAddresses *AddressExpiration) *PacketFilter {
+	var filter PacketFilter
+	filter = func(packet *gopacket.Packet) {
+		// TODO: figure out how to get endpoint from layer
+		sourceMac := (*packet).LinkLayer().LayerContents()
+		err := (*macAddresses).UpdateAddressTimeStamp(sourceMac)
+		if err != nil {
+			sugar.Error(err)
+		}
+	}
+	return &filter
 }
 
 func serializePacket(packet *gopacket.Packet) ([]byte, error) {
