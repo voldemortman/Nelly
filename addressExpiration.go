@@ -8,7 +8,7 @@ import (
 	"github.com/google/gopacket"
 )
 
-type addressExpiration struct {
+type AddressExpiration struct {
 	endpointToTimeStampMap map[gopacket.Endpoint]time.Time
 	limit                  time.Duration
 	endpointType           gopacket.EndpointType
