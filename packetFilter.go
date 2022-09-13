@@ -10,12 +10,13 @@ type PacketFilterBuilder struct {
 	filters []PacketFilter
 }
 
-func (filterBuilder *PacketFilterBuilder) AddFilter(filter PacketFilter) {
+func (filterBuilder *PacketFilterBuilder) AddFilter(filter PacketFilter) *PacketFilterBuilder {
 	if filterBuilder.filters == nil {
 		filterBuilder.filters = []PacketFilter{filter}
 	} else {
 		filterBuilder.filters = append(filterBuilder.filters, filter)
 	}
+	return filterBuilder
 }
 
 func (filterBuilder *PacketFilterBuilder) BuildFilter() *PacketFilter {
