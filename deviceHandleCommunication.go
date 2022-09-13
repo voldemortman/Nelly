@@ -56,8 +56,7 @@ func buildDeviceWriterFilter(handle *pcap.Handle, errorProcessor PacketFilter) *
 func buildMacLearnerFilter(macAddresses *AddressExpiration) *PacketFilter {
 	var filter PacketFilter
 	filter = func(packet *gopacket.Packet) {
-		// TODO: figure out how to get endpoint from layer
-		sourceMac := (*packet).LinkLayer().LayerContents()
+		sourceMac := (*packet).LinkLayer().LinkFlow().Src()
 		err := (*macAddresses).UpdateAddressTimeStamp(sourceMac)
 		if err != nil {
 			sugar.Error(err)
