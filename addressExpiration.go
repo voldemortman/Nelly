@@ -14,7 +14,7 @@ type AddressExpiration struct {
 	endpointType           gopacket.EndpointType
 }
 
-func (expirations *addressExpiration) UpdateAddressTimeStamp(address gopacket.Endpoint) error {
+func (expirations *AddressExpiration) UpdateAddressTimeStamp(address gopacket.Endpoint) error {
 	err := validateEndpointType(expirations.endpointType, address)
 	if err != nil {
 		return err
@@ -23,7 +23,7 @@ func (expirations *addressExpiration) UpdateAddressTimeStamp(address gopacket.En
 	return nil
 }
 
-func (expirations *addressExpiration) TryGetAddressTimeStamp(address gopacket.Endpoint, timeStamp *time.Time) (bool, error) {
+func (expirations *AddressExpiration) TryGetAddressTimeStamp(address gopacket.Endpoint, timeStamp *time.Time) (bool, error) {
 	err := validateEndpointType(expirations.endpointType, address)
 	if err != nil {
 		return false, err
