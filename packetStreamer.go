@@ -4,62 +4,46 @@ import (
 	"errors"
 
 	"github.com/google/gopacket"
-	"go.uber.org/zap"
 )
 
-// TODO: move this to someplace normal
-var sugar *zap.SugaredLogger
-
-type PacketProcessor func(*gopacket.Packet)
-
 type PacketStreamer struct {
-	processor PacketProcessor
-	source    chan *gopacket.Packet
+	Filter *PacketFilter
+	source chan *gopacket.Packet
+	output chan *gopacket.Packet
 }
 
 func (stream *PacketStreamer) AddSource(source chan *gopacket.Packet) error {
 	if stream.source == nil {
-		return errors.New("Packet streamer already has a source")
+		stream.source = source
+		return nil
 	}
-	stream.source = source
+	return errors.New("packet streamer already has source")
 }
 
-func (stream *PacketStreamer) AddProcessor(processorFunc PacketProcessor) *PacketStreamer {
-	if stream.processor != nil {
-		stream.processor = processorFunc
-	} else {
-		stream.processor = func(packet *gopacket.Packet) {
-			stream.processor(packet)
-			processorFunc(packet)
-		}
+func (stream *PacketStreamer) AddOutput(output chan *gopacket.Packet) error {
+	if stream.output == nil {
+		stream.output = output
+		return nil
 	}
-	return stream
+	return errors.New("packet streamer already has output")
 }
 
-func (stream *PacketStreamer) Start(quit chan bool) chan *gopacket.Packet {
-	output := make(chan *gopacket.Packet)
+func (stream *PacketStreamer) Start(quit chan bool) {
 	go func() {
 		hasQuitBeenCalled := false
 		for !hasQuitBeenCalled {
 			select {
 			case packet := <-stream.source:
-				if stream.processor != nil {
-					stream.processor(packet)
+				if stream.Filter != nil && *stream.Filter != nil {
+					(*stream.Filter)(packet)
 				}
-				output <- packet
+				if stream.output != nil {
+					stream.output <- packet
+				}
 			case <-quit:
 				hasQuitBeenCalled = true
 				sugar.Debug("Quit has been called")
 			}
 		}
 	}()
-	return output
-}
-
-func InitializePacketStreamer(source chan *gopacket.Packet) *PacketStreamer {
-	sugar = InitializeLogger()
-	return &PacketStreamer{
-		source:    source,
-		processor: nil,
-	}
 }
