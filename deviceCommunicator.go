@@ -1,6 +1,8 @@
 package nelly
 
 import (
+	"errors"
+
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
 )
@@ -11,60 +13,46 @@ type DeviceCommunicator struct {
 	PacketWriter  *PacketStreamer
 }
 
-// TODO: research different snap lengths
-// The same default as tcpdump.
-const defaultSnapLen = 262144
+type PacketFilter func(*gopacket.Packet)
 
-// TODO: split creation of packet reader and writer to different files
-func BuildDeviceCommunicator(device string, writeErrorHandler PacketProcessor) (*DeviceCommunicator, error) {
-	handle, err := pcap.OpenLive(device, defaultSnapLen, true, -1)
-	if err != nil {
-		return nil, err
-	}
-	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
-	sniffer := PacketStreamer{
-		nil,
-		ConvertChanToPointerChan[gopacket.Packet](packetSource.Packets()),
-	}
-	writer := PacketStreamer{
-		buildDeviceWriterFilter(handle, writeErrorHandler),
-		nil,
-	}
-	devCommunicator := DeviceCommunicator{
-		handle,
-		&sniffer,
-		&writer,
-	}
-	return &devCommunicator, nil
+type PacketStreamer struct {
+	Filter *PacketFilter
+	source chan *gopacket.Packet
+	output chan *gopacket.Packet
 }
 
-func buildDeviceWriterFilter(handle *pcap.Handle, errorProcessor PacketProcessor) func(packet *gopacket.Packet) {
-	return func(packet *gopacket.Packet) {
-		rawBytes, err := serializePacket(packet)
-		if err != nil {
-			sugar.Warn("Failed to serialize packet")
-			if errorProcessor != nil {
-				errorProcessor(packet)
-			}
-		}
-		err = handle.WritePacketData(rawBytes)
-		if err != nil {
-			sugar.Warn("Failed to send packet to device")
-			if errorProcessor != nil {
-				errorProcessor(packet)
-			}
-		}
+func (stream *PacketStreamer) AddSource(source chan *gopacket.Packet) error {
+	if stream.source == nil {
+		stream.source = source
+		return nil
 	}
+	return errors.New("packet streamer already has source")
 }
 
-func serializePacket(packet *gopacket.Packet) ([]byte, error) {
-	buffer := gopacket.NewSerializeBuffer()
-	err := gopacket.SerializePacket(buffer, gopacket.SerializeOptions{
-		FixLengths:       false,
-		ComputeChecksums: false,
-	}, *packet)
-	if err != nil {
-		return nil, err
+func (stream *PacketStreamer) AddOutput(output chan *gopacket.Packet) error {
+	if stream.output == nil {
+		stream.output = output
+		return nil
 	}
-	return buffer.Bytes(), nil
+	return errors.New("packet streamer already has output")
+}
+
+func (stream *PacketStreamer) Start(quit chan bool) {
+	go func() {
+		hasQuitBeenCalled := false
+		for !hasQuitBeenCalled {
+			select {
+			case packet := <-stream.source:
+				if stream.Filter != nil && *stream.Filter != nil {
+					(*stream.Filter)(packet)
+				}
+				if stream.output != nil {
+					stream.output <- packet
+				}
+			case <-quit:
+				hasQuitBeenCalled = true
+				sugar.Debug("Quit has been called")
+			}
+		}
+	}()
 }
