@@ -1,13 +1,14 @@
 # Nelly
-Open source sdn with easy BPF capabilities, the ability to create bridges locally, remotely with a spine leaf architechture, and the combination of both, a management server for the spines and leaves, and a client/cli tool to manage it
+Open source sdn with easy BPF capabilities, the ability to create bridges locally, remotely with a spine leaf architechture, and the combination of both, a management server for the spines and leaves, and a client/cli tool to manage it.
+If you don't know about spine leaf architechture, you could read about it [here](https://community.fs.com/blog/leaf-spine-with-fs-com-switches.html).
 
 ## TODO
-- [] Copy code for initial POC
-- [] Orginize logger
-- [] Create CLI
-- [] Make bridge with switches and mac learning
-- [] Create server for spine and leaf
-- [] Add functionality like latency, pl, bandwith, and ordering
+- [] Copy code for initial POC.
+- [] Orginize logger.
+- [] Create CLI.
+- [] Make bridge with switches and mac learning.
+- [] Create server for spine and leaf.
+- [] Add functionality like latency, pl, bandwith, and ordering.
 - [] Make filters more managed, with orders of filters and names. Some filters might have to be last and not displayed.
 - [] Management server. This will also include heartbeating on the bridges.
 
@@ -78,7 +79,7 @@ A leaf will host remote stalkers.
   **Returns** All remote stalkers. If bridge id is provided, returns only stalkers connected to bridgeId.
 
 - *GET* /remote/{stalkerID}/ <br>
-  **Returns** Returns the configuration for the remote stalker with stalker id
+  **Returns** Returns the configuration for the remote stalker with stalker id.
 
 - *POST* /remote/ <br>
   **Body**
@@ -91,7 +92,7 @@ A leaf will host remote stalkers.
   ```
   Creates a stalker that sends all traffic to spineAddress:port(udp) and listens on port(udp). <br>
   This should be called after the stalker was created on the bridge, so that there will be no packet loss. <br>
-  **Returns** the id of the stalker
+  **Returns** the id of the stalker.
 
 - *DELETE* /remote/ <br>
   **Body**
@@ -100,11 +101,11 @@ A leaf will host remote stalkers.
     bridgeID: UUID
   }
   ```
-  Deletes all stalkers that are connected to bridge with bridgeID
-  **Returns** a list containing all stalkers with id
+  Deletes all stalkers that are connected to bridge with bridgeID.
+  **Returns** a list containing all stalkers with id.
 
 - *DELETE* /remote/{stalkerID}/ <br>
-  Delete a stalker with id stalkerID
+  Delete a stalker with id stalkerID.
 
 - *PATCH* /remote/{stalkerID}/ <br>
   **Body**
@@ -123,20 +124,20 @@ The spine will house bridges. It can communicate with remote stalkers, or it can
 - *GET* /bridge/{bridgeId} <br>
   **Returns** the bridge configuration.
 
-- *GET* /bridge/{bridgeId}/switchingTable <br>
+- *GET* /bridge/{bridgeId}/switchingTable/ <br>
   **Returns** the switching table of bridge with id bridgeId. <br>
   **Except** 409 Conflict - if the bridge is set to hub.
 
-- *GET* /bridge/{bridgeId}/local <br>
+- *GET* /bridge/{bridgeId}/local/ <br>
   **Returns** all local stalkers connected to the bridge.
 
-- *GET* /bridge/{bridgeid}/local/{stalkerId} <br>
+- *GET* /bridge/{bridgeid}/local/{stalkerId}/ <br>
   **Returns** the configuration for a singular local stalker connected to a bridge.
 
 - *GET* /bridge/{bridgeId}/remote <br>
   **Returns** all remote stalkers connected to the bridge.
 
-- *GET* /bridge/{bridgeid}/remote/{stalkerId} <br>
+- *GET* /bridge/{bridgeid}/remote/{stalkerId}/ <br>
   **Returns** the configuration for a singular remote stalker connected to a bridge.
 
 - *POST* /bridge/ <br>
@@ -159,7 +160,7 @@ The spine will house bridges. It can communicate with remote stalkers, or it can
   Creates a bridge. <br> 
   **Returns** the bridge id.
 
-- *POST* /bridge/{bridgeId}/local
+- *POST* /bridge/{bridgeId}/local/
   **Body**: 
   ```
   {
@@ -169,7 +170,7 @@ The spine will house bridges. It can communicate with remote stalkers, or it can
   Creates a local stalker that listens on the interface. <br>
   **Returns** the stalker id.
 
-- *POST* /bridge/{bridgeId}/remote
+- *POST* /bridge/{bridgeId}/remote/
   **Body**: 
   ```
   {
@@ -188,16 +189,16 @@ The spine will house bridges. It can communicate with remote stalkers, or it can
   }
   ```
   Create a remote stalker that listens to incoming transmition on the udp port, and will send packets to a stalker at the leafAdress that listens on the specified port. <br>
-  **Returns** the stalker id <br>
+  **Returns** the stalker id. <br>
   **Except** 409 Conflict - if the port is already in use by another stalker.
 
-- *DELETE* /bridge/{bridgeId} <br>
+- *DELETE* /bridge/{bridgeId}/ <br>
   Deletes a bridge with bridge id. <br>
   **Except** 409 Conflict - if the bridge has connected stalkers, it will return 409.
 
-- *DELETE* /bridge/{bridgeId}/local/{stalkerId} <br>
+- *DELETE* /bridge/{bridgeId}/local/{stalkerId}/ <br>
   Deletes a local stalker with stalker id on bridge with bridge id.
 
-- *DELETE* /bridge/{bridgeId}/remote/{stalkerId} <br>
+- *DELETE* /bridge/{bridgeId}/remote/{stalkerId}/ <br>
   Deletes a remote stalker with stalker id on bridge with bridge id.
   
