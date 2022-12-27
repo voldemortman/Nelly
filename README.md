@@ -13,9 +13,11 @@ If you don't know about spine leaf architechture, you could read about it [here]
 - [] Management server. This will also include heartbeating on the bridges.
 
 ## Stalker
-A stalker is the component in charge of tunneling all packets going out of a network interface, and is in charge of peeling all incoming traffic heading to the interface.
+---
+A stalker is the component in charge of tunneling all packets going out of a network interface, and is in charge of peeling all incoming traffic heading to the interface.<br>
+<br>
 
-There will be two types of stalkers. 
+There will be two types of stalkers:
 
 ### Local Stalker
 One will be a local stalker, where the interface being stalked is directly connected to the bridge host.
@@ -25,6 +27,7 @@ The local stalker will communicate with the bridge directly, and will have the f
 {
   interface: string
   id: UUID
+  isRunning: bool
 }
 ```
 
@@ -39,10 +42,12 @@ The remote stalker will have the following configuration:
   port: number
   id: UUID
   bridgeId: UUID // This might just be in the DB
+  isRunning: bool
 }
 ```
 
 ## Bridge
+---
 The bridge can work either like a switch or a hub. It will have the endpoint of every stalker in its configuration.
 
 The configuration will look like this:
@@ -63,11 +68,117 @@ The configuration will look like this:
   }]
 }
 ```
+<br>
+
+## Nelly Server
+---
+The nelly server will be in charge of managing the bridges and stalkers. The nelly server has two modes: leaf and spine. It will be a grpc server that will only be exposed to the management server. <br>
+<br>
+
+### Routes 
+Some routes will be exposed only in leaf mode, some only in spine mode, and the rest will be exposed in both modes.
+
+<br>
+
+#### Common Routes 
+
+- *POST* /killStalker/ <br>
+  **Body**
+  ```
+  {
+    stalkerId: UUID
+  }
+  ```
+  Kill a stalker with the specified id.
+
+- *POST* /pauseStalker/ <br>
+  **Body**
+  ```
+  {
+    stalkerId: UUID
+  }
+  ```
+  Pause stalker with the specified id.
+
+- *POST* /unpauseStalker/ <br>
+  **Body**
+  ```
+  {
+    stalkerId: uuid
+  }
+  ```
+  Unpause a stalker with the specified id.
+
+  - *GET* /getSwitchingTable/ <br>
+  **Body**
+  ```
+  {
+    bridgeId
+  }
+  ```
+  Get the switching table of a bridge.
+<br>
+<br>
+
+#### Spine Mode Routes
+
+- *POST* /changeBridgeMode/ <br>
+  Change the mode of a bridge to hub if it is a switch, and to a switch if it is a hub.
+
+- *POST* /createBridge/ <br>
+  **Body**
+  ```
+  {
+    bridgeId: UUID
+  }
+  ```
+  Create a bridge with id.
+
+- *POST* /deleteBridge/ <br>
+  **Body**
+  ```
+  {
+    bridgeId: UUID
+  }
+  ```
+  Delete a bridge with specified id.
+
+- *POST* /createLocalStalker/ <br>
+  **Body**
+  ```
+  {
+    stalkerId: UUID
+    interface: string
+    bridgeId: UUID
+  }
+  ```
+  Create a local stalker that will communicate with bridge that will communicate with bridge that has the specified id. 
+<br>
+<br>
+
+#### Leaf Mode Routes
+- *POST* /createRemoteStalker/ <br>
+  **Body**
+  ```
+  {
+    stalkerId: UUID
+    interface: string
+    spineAddress: string
+    port: number
+  }
+  ```
+  Create a remote stalker.
+
 
 ## Leaf
-A leaf will host remote stalkers. 
+---
+A leaf has to run 2 containers, the nelly management server, and the nelly server in leaf mode. 
 
-### Routes:
+## Nelly Management Server
+The nelly management server, will be how you communicate with nelly. It wil be expose a rest server to the public network, and will be able to access systemwide state. It will also be in charge of all leaf state management, and request validation. Any future feature regarding users, accessing a db, or something similar will be added to here.
+
+
+#### Routes
 
 - *GET* /remote/ <br>
   **Body**
@@ -117,9 +228,15 @@ A leaf will host remote stalkers.
   Make the stalker send all packets to remote address.
 
 ## Spine
-The spine will house bridges. It can communicate with remote stalkers, or it can also host local stalkers and act just as a switch.
+---
+The spine will house bridges. It can communicate with remote stalkers, or it can also host local stalkers and act just as a switch. Similar to the leaf, it will have a nelly management server on one container, and a nelly server in spine mode on another container.<br>
+<br>
 
-### Routes:
+### Nelly server:
+The nelly server will be in charge of managing the bridges and the local stalkers. It will be a grpc server that will only be exposed to the management server.
+
+
+#### Routes:
 
 - *GET* /bridge/{bridgeId} <br>
   **Returns** the bridge configuration.
@@ -201,4 +318,13 @@ The spine will house bridges. It can communicate with remote stalkers, or it can
 
 - *DELETE* /bridge/{bridgeId}/remote/{stalkerId}/ <br>
   Deletes a remote stalker with stalker id on bridge with bridge id.
+
+- *PATCH* /bridge/{bridgeId}/ <br>
+  **Body**
+  ```
+  {
+    mode: "switch" | "hub"
+  }
+  ```
+  Change bridge mode to switch or to hub.
   
