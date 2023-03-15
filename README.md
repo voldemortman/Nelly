@@ -22,7 +22,7 @@ There will be two types of stalkers:
 ### Local Stalker
 One will be a local stalker, where the interface being stalked is directly connected to the bridge host.
 
-The local stalker will communicate with the bridge directly, and will have the following configuration:
+The local stalker will communicate with the bridge directly. The local stalker is used when nelly server is in single mode. Local stalkers will have the following configuration:
 ```
 {
   interface: string
@@ -30,6 +30,7 @@ The local stalker will communicate with the bridge directly, and will have the f
   isRunning: bool
 }
 ```
+
 
 ### Remote Stalker
 The other will be a remote stalker, and will communicate with the bridge with a connected udp socket. The port will be the same number between the bridge and the stalker, and they will be unique across the entire system. This means that the number of stalkers is limited to 2^16 ports. The upside of limiting the ports is that migrating bridge to different spines will be extremly easy and without packet loss. If the port isn't unique between spines, when we migrate to a different spine we can't necessarily have the bridge communicate on the same port number, and then if we change the port number, we either have to deal with packet loss or latency.
@@ -72,7 +73,7 @@ The configuration will look like this:
 
 ## Nelly Server
 ---
-The nelly server will be in charge of managing the bridges and stalkers. The nelly server has two modes: leaf and spine. It will be a grpc server that will only be exposed to the management server. <br>
+The nelly server will be in charge of managing the bridges and stalkers. The nelly server has three modes: leaf, spine, and single. Single mode means that the server will have both stalkers and bridges connected to it, and it isn't part of a leaf spine architecture. It will be a grpc server that will only be exposed to the management server. <br>
 <br>
 
 ### Routes 
@@ -80,8 +81,54 @@ Some routes will be exposed only in leaf mode, some only in spine mode, and the 
 
 <br>
 
-#### Common Routes 
+#### Spine Mode Routes
 
+- *POST* /changeBridgeMode/ <br>
+  Change the mode of a bridge to hub if it is a switch, and to a switch if it is a hub.
+
+- *POST* /createBridge/ <br>
+  **Body**
+  ```
+  {
+    bridgeId: UUID
+  }
+  ```
+  Create a bridge with id.
+  
+- *POST* /deleteBridge/ <br>
+  **Body**
+  ```
+  {
+    bridgeId: UUID
+  }
+  ```
+  Delete a bridge with specified id.
+
+  - *GET* /getSwitchingTable/ <br>
+  **Body**
+  ```
+  {
+    bridgeId
+  }
+  ```
+  Get the switching table of a bridge.
+<br>
+<br>
+
+#### Leaf Mode Routes
+- *POST* /createStalker/ <br>
+  **Body**
+  ```
+  {
+    stalkerId: UUID
+    interface: string
+    spineAddress: string
+    port: number
+  }
+  ```
+  Create a remote stalker.
+
+  
 - *POST* /killStalker/ <br>
   **Body**
   ```
@@ -89,7 +136,7 @@ Some routes will be exposed only in leaf mode, some only in spine mode, and the 
     stalkerId: UUID
   }
   ```
-  Kill a stalker with the specified id.
+  Kill a stalker with the specified id. 
 
 - *POST* /pauseStalker/ <br>
   **Body**
@@ -109,66 +156,9 @@ Some routes will be exposed only in leaf mode, some only in spine mode, and the 
   ```
   Unpause a stalker with the specified id.
 
-  - *GET* /getSwitchingTable/ <br>
-  **Body**
-  ```
-  {
-    bridgeId
-  }
-  ```
-  Get the switching table of a bridge.
-<br>
-<br>
+#### Single Mode Routes
 
-#### Spine Mode Routes
-
-- *POST* /changeBridgeMode/ <br>
-  Change the mode of a bridge to hub if it is a switch, and to a switch if it is a hub.
-
-- *POST* /createBridge/ <br>
-  **Body**
-  ```
-  {
-    bridgeId: UUID
-  }
-  ```
-  Create a bridge with id.
-
-- *POST* /deleteBridge/ <br>
-  **Body**
-  ```
-  {
-    bridgeId: UUID
-  }
-  ```
-  Delete a bridge with specified id.
-
-- *POST* /createLocalStalker/ <br>
-  **Body**
-  ```
-  {
-    stalkerId: UUID
-    interface: string
-    bridgeId: UUID
-  }
-  ```
-  Create a local stalker that will communicate with bridge that will communicate with bridge that has the specified id. 
-<br>
-<br>
-
-#### Leaf Mode Routes
-- *POST* /createRemoteStalker/ <br>
-  **Body**
-  ```
-  {
-    stalkerId: UUID
-    interface: string
-    spineAddress: string
-    port: number
-  }
-  ```
-  Create a remote stalker.
-
+Single mode will have all the routes of the leaf and of the spine.
 
 ## Leaf
 ---
