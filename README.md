@@ -1,5 +1,5 @@
 # Nelly
-Open source sdn with easy BPF capabilities, the ability to create bridges locally, remotely with a spine leaf architechture, and the combination of both, a management server for the spines and leaves, and a client/cli tool to manage it.
+Nelly is an open source sdn with easy BPF capabilities, the ability to create bridges locally, remotely with a spine leaf architechture, a management server for the spines and leaves, and a client/cli tool to manage it. Nelly is the name of the system as a whole, but the individiual servers running on each leaf/spine/single node are called a Furtado
 If you don't know about spine leaf architechture, you could read about it [here](https://community.fs.com/blog/leaf-spine-with-fs-com-switches.html).
 
 ## TODO
@@ -129,7 +129,7 @@ Some routes will be exposed only in leaf mode, some only in spine mode, and the 
   Create a remote stalker.
 
   
-- *POST* /killStalker/ <br>
+- *Patch* /killStalker/ <br>
   **Body**
   ```
   {
@@ -138,7 +138,7 @@ Some routes will be exposed only in leaf mode, some only in spine mode, and the 
   ```
   Kill a stalker with the specified id. 
 
-- *POST* /pauseStalker/ <br>
+- *Patch* /pauseStalker/ <br>
   **Body**
   ```
   {
@@ -147,7 +147,7 @@ Some routes will be exposed only in leaf mode, some only in spine mode, and the 
   ```
   Pause stalker with the specified id.
 
-- *POST* /unpauseStalker/ <br>
+- *Patch* /unpauseStalker/ <br>
   **Body**
   ```
   {
