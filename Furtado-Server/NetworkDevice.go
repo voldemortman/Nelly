@@ -16,7 +16,7 @@ type NetworkDevice struct {
 
 func (device *NetworkDevice) ReadFromDevice() (chan *gopacket.Packet, error) {
 	if device.IsRunning {
-		return nil, errors.New("Device is already in use")
+		return nil, errors.New("device is already in use")
 	}
 	device.IsRunning = true
 
