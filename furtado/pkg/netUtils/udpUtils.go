@@ -21,13 +21,17 @@ func CreateUDPSocket(sourceAddress string, destAddress string) (*net.UDPConn, er
 }
 
 type UDPConnectionReadResult struct {
-	buffer  *[]byte
-	length  int
+	Buffer  *[]byte
+	Length  int
 	UDPAddr *net.UDPAddr
-	err     error
+	Err     error
 }
 
-func ListenOnUDP(address string, readResults chan *UDPConnectionReadResult) (*net.UDPConn, error) {
+// We return conn so that the user can close it. We do this on top of a quit channel is because we dont
+// want a timeout on the read. So we want the user to close the connection. However, we don't want to start
+// checking the contents of the error so we also use the quit channel. The user is supposed to send a message
+// on the quit channel, and then close the connection
+func ListenOnUDP(address string, readResults chan *UDPConnectionReadResult, quit chan struct{}) (*net.UDPConn, error) {
 	udpAddr, err := net.ResolveUDPAddr("udp", address)
 	if err != nil {
 		return nil, err
@@ -40,15 +44,20 @@ func ListenOnUDP(address string, readResults chan *UDPConnectionReadResult) (*ne
 
 	go func() {
 		for {
-			buffer := make([]byte, 1024)
-			length, address, err := conn.ReadFromUDP(buffer)
-			result := &UDPConnectionReadResult{
-				buffer:  &buffer,
-				length:  length,
-				UDPAddr: address,
-				err:     err,
+			select {
+			case <-quit:
+				return
+			default:
+				buffer := make([]byte, 1024)
+				length, address, err := conn.ReadFromUDP(buffer)
+				result := &UDPConnectionReadResult{
+					buffer:  &buffer,
+					length:  length,
+					UDPAddr: address,
+					err:     err,
+				}
+				readResults <- result
 			}
-			readResults <- result
 		}
 	}()
 
