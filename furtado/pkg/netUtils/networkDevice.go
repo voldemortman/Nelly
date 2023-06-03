@@ -3,6 +3,7 @@ package netUtils
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
@@ -12,6 +13,19 @@ type NetworkDevice struct {
 	handle      *pcap.Handle
 	IsRunning   bool
 	stopChannel chan struct{}
+}
+
+func CreateNetworkDevice(deviceName string, snapLen int32, timeout time.Duration) (*NetworkDevice, error) {
+	handle, err := pcap.OpenLive(deviceName, snapLen, true, timeout)
+	if err != nil {
+		return nil, err
+	}
+
+	return &NetworkDevice{
+		handle:      handle,
+		IsRunning:   false,
+		stopChannel: make(chan struct{}),
+	}, nil
 }
 
 func (device *NetworkDevice) ReadFromDevice() (chan *gopacket.Packet, error) {
