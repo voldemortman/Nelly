@@ -12,6 +12,7 @@ type RemoteStalkerConfig struct {
 	Interface string
 	IsRunning bool
 	BridgeIP  string
+	LocalIP   string
 	Port      int
 }
 
