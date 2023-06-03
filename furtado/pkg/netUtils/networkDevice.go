@@ -61,8 +61,8 @@ func (device *NetworkDevice) ReadFromDevice() (chan *gopacket.Packet, error) {
 	return packetChan, nil
 }
 
-func (device *NetworkDevice) SendToDevice(packetData []byte) {
-	err := device.handle.WritePacketData(packetData)
+func (device *NetworkDevice) SendToDevice(packetData *[]byte) {
+	err := device.handle.WritePacketData(*packetData)
 	if err != nil {
 		fmt.Println("Error while writing packet to device: ", err)
 	}
