@@ -51,10 +51,10 @@ func ListenOnUDP(address string, readResults chan *UDPConnectionReadResult, quit
 				buffer := make([]byte, 1024)
 				length, address, err := conn.ReadFromUDP(buffer)
 				result := &UDPConnectionReadResult{
-					buffer:  &buffer,
-					length:  length,
+					Buffer:  &buffer,
+					Length:  length,
 					UDPAddr: address,
-					err:     err,
+					Err:     err,
 				}
 				readResults <- result
 			}
