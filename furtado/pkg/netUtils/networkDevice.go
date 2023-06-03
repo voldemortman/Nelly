@@ -3,7 +3,6 @@ package netUtils
 import (
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
@@ -15,8 +14,15 @@ type NetworkDevice struct {
 	stopChannel chan struct{}
 }
 
-func CreateNetworkDevice(deviceName string, snapLen int32, timeout time.Duration) (*NetworkDevice, error) {
-	handle, err := pcap.OpenLive(deviceName, snapLen, true, timeout)
+const (
+	// The same default as tcpdump
+	defaultSnapLen = 262144
+	// read here for why -1: https://pkg.go.dev/github.com/google/gopacket@v1.1.19/pcap#hdr-PCAP_Timeouts
+	timeout = -1
+)
+
+func CreateNetworkDevice(deviceName string) (*NetworkDevice, error) {
+	handle, err := pcap.OpenLive(deviceName, defaultSnapLen, true, timeout)
 	if err != nil {
 		return nil, err
 	}
