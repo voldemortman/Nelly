@@ -7,7 +7,7 @@ import (
 
 type IStalker interface {
 	StartStalking() error
-	StopStalking() error
+	StopStalking()
 }
 
 type RemoteStalker struct {
@@ -76,4 +76,8 @@ func (stalker *RemoteStalker) StartStalking() error {
 	}()
 
 	return nil
+}
+
+func (stalker *RemoteStalker) StopStalking() {
+	close(stalker.quit)
 }
