@@ -11,7 +11,7 @@ import (
 type NetworkDevice struct {
 	handle      *pcap.Handle
 	IsRunning   bool
-	stopChannel chan bool
+	stopChannel chan struct{}
 }
 
 func (device *NetworkDevice) ReadFromDevice() (chan *gopacket.Packet, error) {
@@ -49,6 +49,6 @@ func (device *NetworkDevice) SendToDevice(packetData []byte) {
 }
 
 func (device *NetworkDevice) CloseCommunication() {
-	device.stopChannel <- true
+	close(device.stopChannel)
 	device.handle.Close()
 }
