@@ -1,4 +1,4 @@
-module github.com/voldemortman/nelly
+module furtado
 
 go 1.19
 
