@@ -1,4 +1,4 @@
-package furtado
+package netUtils
 
 import (
 	"net"

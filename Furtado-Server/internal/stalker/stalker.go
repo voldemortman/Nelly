@@ -1,4 +1,4 @@
-package furtado
+package stalker
 
 type IStalker interface {
 	StartStalking() error

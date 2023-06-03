@@ -1,4 +1,4 @@
-package furtado
+package stalker
 
 import (
 	"github.com/google/uuid"
