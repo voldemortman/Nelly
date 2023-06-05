@@ -17,7 +17,6 @@ type remoteStalker struct {
 }
 
 func (stalker *RemoteStalker) StartStalking() error {
-
 	sourceAddress := fmt.Sprint(stalker.config.LocalIP, ":", stalker.config.Port)
 	destAddress := fmt.Sprintf(stalker.config.BridgeIP, ":", stalker.config.Port)
 
