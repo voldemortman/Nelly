@@ -5,13 +5,13 @@ import (
 	"furtado/pkg/netUtils"
 )
 
-type IStalker interface {
+type iStalker interface {
 	StartStalking() error
 	StopStalking()
 	IsRunning() bool
 }
 
-type RemoteStalker struct {
+type remoteStalker struct {
 	config RemoteStalkerConfig
 	quit   chan struct{}
 }
