@@ -16,7 +16,7 @@ type remoteStalker struct {
 	quit   chan struct{}
 }
 
-func (stalker *RemoteStalker) StartStalking() error {
+func (stalker *remoteStalker) StartStalking() error {
 	sourceAddress := fmt.Sprint(stalker.config.LocalIP, ":", stalker.config.Port)
 	destAddress := fmt.Sprintf(stalker.config.BridgeIP, ":", stalker.config.Port)
 
@@ -79,11 +79,11 @@ func (stalker *RemoteStalker) StartStalking() error {
 	return nil
 }
 
-func (stalker *RemoteStalker) StopStalking() {
+func (stalker *remoteStalker) StopStalking() {
 	close(stalker.quit)
 	stalker.config.IsRunning = false
 }
 
-func (stalker *RemoteStalker) IsRunning() bool {
+func (stalker *remoteStalker) IsRunning() bool {
 	return stalker.config.IsRunning
 }

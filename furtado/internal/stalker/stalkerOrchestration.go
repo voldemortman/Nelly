@@ -15,12 +15,12 @@ type IStalkerOrchestrator[TConfig IStalkerConfig] interface {
 }
 
 type RemoteStalkerOrchestrator struct {
-	stalkerMap *map[uuid.UUID]RemoteStalker
+	stalkerMap *map[uuid.UUID]remoteStalker
 }
 
 func (orchestrator *RemoteStalkerOrchestrator) CreateStalker(config RemoteStalkerConfig) uuid.UUID {
 	quitChannel := make(chan struct{})
-	stalker := &RemoteStalker{config, quitChannel}
+	stalker := &remoteStalker{config, quitChannel}
 	id := uuid.New()
 	(*orchestrator.stalkerMap)[id] = *stalker
 	return id
