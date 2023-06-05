@@ -75,9 +75,11 @@ func (stalker *RemoteStalker) StartStalking() error {
 		}
 	}()
 
+	stalker.config.IsRunning = true
 	return nil
 }
 
 func (stalker *RemoteStalker) StopStalking() {
 	close(stalker.quit)
+	stalker.config.IsRunning = false
 }
