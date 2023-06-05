@@ -8,6 +8,7 @@ import (
 type IStalker interface {
 	StartStalking() error
 	StopStalking()
+	IsRunning() bool
 }
 
 type RemoteStalker struct {
@@ -82,4 +83,8 @@ func (stalker *RemoteStalker) StartStalking() error {
 func (stalker *RemoteStalker) StopStalking() {
 	close(stalker.quit)
 	stalker.config.IsRunning = false
+}
+
+func (stalker *RemoteStalker) IsRunning() bool {
+	return stalker.config.IsRunning
 }
